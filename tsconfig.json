@@ -14,7 +14,7 @@
         "noImplicitThis": true,
         "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors": true,
-        "noUnusedLocals": true,
+        // "noUnusedLocals": true,
         "strict": true
     },
     "exclude": [
