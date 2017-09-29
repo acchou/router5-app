@@ -6,31 +6,81 @@ import browserPlugin from "router5/plugins/browser";
 import listenersPlugin from "router5/plugins/listeners";
 
 import * as Rx from "rxjs";
+import * as Recompose from "recompose";
+import rxjsConfig from "recompose/rxjsObservableConfig";
 
 import createObservables from "rxjs-router5";
 
-const routes = [{ name: "home", path: "/home" }, { name: "about", path: "/about" }];
+Recompose.setObservableConfig(rxjsConfig);
 
-const { route$, routeNode, transitionError$, transitionRoute$ } = createObservables(
-    createRouter(routes)
-);
+const routes = [
+    { name: "home", path: "/home" },
+    { name: "about", path: "/about" },
+    { name: "users", path: "/users" },
+    { name: "users.view", path: "/view" },
+    { name: "users.list", path: "/list" }
+];
+
+const router = createRouter(routes);
+const { route$, routeNode, transitionError$, transitionRoute$ } = createObservables(router);
 
 const logo = require("./logo.svg");
 
-class App extends React.Component {
-    render() {
-        return (
-            <div className="App">
-                <div className="App-header">
-                    <img src={logo} className="App-logo" alt="logo" />
-                    <h2>Welcome to React</h2>
-                </div>
-                <p className="App-intro">
-                    To get started, edit <code>src/App.tsx</code> and save to reload.
-                </p>
-            </div>
-        );
-    }
+interface BasicInputProps {
+    onSubmit: (value: string | null) => void;
 }
+
+function BasicInput(props: BasicInputProps) {
+    let value: string | null;
+    return (
+        <div className="basic-input">
+            <input type="text" onChange={newValue => (value = newValue.target.textContent)} />
+            <input type="button" onClick={() => props.onSubmit(value)} value="submit" />
+        </div>
+    );
+}
+
+export function createHandler<T>(): Recompose.EventHandlerOf<T, Rx.Observable<T>> {
+    return Recompose.createEventHandler();
+}
+
+interface AppViewModelInputs {
+    submit$: Rx.Observable<string>;
+}
+
+interface AppViewModelOutputs {
+    routerPath: string;
+    input: string;
+}
+
+function AppViewModel(inputs: AppViewModelInputs) {
+    const { submit$ } = inputs;
+    const initial = "home";
+    const input$ = submit$.startWith(initial);
+    const output$ = input$.map(input => ({
+        input: input,
+        routerPath: router.buildPath(input, {})
+    }));
+
+    return output$;
+}
+
+const App = Recompose.componentFromStream(props$ => {
+    const { handler: submit, stream: submit$ } = createHandler<string>();
+    const output$ = AppViewModel({ submit$ });
+
+    return output$.map(({ input, routerPath }) => (
+        <div key="none" className="App">
+            <div className="App-header">
+                <h2>Welcome to React</h2>
+            </div>
+            <div className="form">
+                <BasicInput onSubmit={val => submit(val ? val : "")} />
+                <span className="response">input: {input}</span>
+                <span className="response">routerPath: {routerPath}</span>
+            </div>
+        </div>
+    ));
+});
 
 export default App;
