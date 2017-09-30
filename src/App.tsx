@@ -21,12 +21,6 @@ const routes = [
     { name: "users.list", path: "/list" }
 ];
 
-const router = createRouter(routes);
-const { route$, routeNode, transitionError$, transitionRoute$ } = createObservables(router);
-
-const logo = require("./logo.svg");
-const eye = require("./eye.svg");
-
 interface ObserveProps {
     // tslint:disable-next-line:no-any
     [name: string]: Rx.Observable<any>;
@@ -34,6 +28,7 @@ interface ObserveProps {
 
 // A debugging component to show observables that are driving the view
 function DebugObservablesWidget(props: ObserveProps) {
+    const eye = require("./eye.svg");
     const widget = (
         <img src={eye} className="observe-widget" onClick={() => console.log("clicked widget")} />
     );
@@ -105,9 +100,12 @@ interface AppViewModelOutputs {
 }
 
 function AppViewModel(inputs: AppViewModelInputs) {
+    const router = createRouter(routes);
+    const { route$, routeNode, transitionError$, transitionRoute$ } = createObservables(router);
+
     const { onInput$ } = inputs;
     const initial = "home";
-    const input$ = onInput$.startWith(initial);
+    const input$ = onInput$.debounceTime(100).startWith(initial);
     const output$ = input$.map(input => ({
         input: input,
         routerPath: router.buildPath(input, {})
