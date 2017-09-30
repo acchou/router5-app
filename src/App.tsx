@@ -52,20 +52,42 @@ function DebugObservablesWidget(props: ObserveProps) {
 }
 
 interface BasicInputProps {
-    onSubmit: (value: string | null) => void;
+    onInput: (value: string) => void;
 }
 
 function BasicInput(props: BasicInputProps) {
     return (
-        <div className="basic-input">
-            <input
-                type="text"
-                onInput={(event: React.FormEvent<HTMLInputElement>) => {
-                    const value = event.currentTarget.value;
-                    props.onSubmit(value);
-                }}
-            />
+        <input
+            type="text"
+            onInput={(event: React.FormEvent<HTMLInputElement>) => {
+                const value = event.currentTarget.value;
+                props.onInput(value);
+            }}
+        />
+    );
+}
+
+interface QueryFormProps {
+    formName: string;
+    inputName: string;
+    onInput: (input: string) => void;
+    result: object;
+}
+
+function QueryForm(props: QueryFormProps) {
+    const results = Object.keys(props.result).map(fieldName => (
+        <div key={fieldName} className="query-form response">
+            {fieldName + ": " + props.result[fieldName]}
         </div>
+    ));
+    return (
+        <fieldset className="query-form container">
+            <legend>{props.formName}</legend>
+            <span>{props.inputName}: </span>
+            <BasicInput onInput={val => props.onInput(val ? val : "")} />
+            <p />
+            {results}
+        </fieldset>
     );
 }
 
@@ -74,19 +96,19 @@ export function createHandler<T>(): Recompose.EventHandlerOf<T, Rx.Observable<T>
 }
 
 interface AppViewModelInputs {
-    submit$: Rx.Observable<string>;
+    onInput$: Rx.Observable<string>;
 }
 
 interface AppViewModelOutputs {
     routerPath: string;
-    input: string;
+    onInput: string;
 }
 
 function AppViewModel(inputs: AppViewModelInputs) {
-    const { submit$ } = inputs;
+    const { onInput$ } = inputs;
     const initial = "home";
-    const input$ = submit$.startWith(initial);
-    const output$ = input$.do(input => console.log("input: " + input)).map(input => ({
+    const input$ = onInput$.startWith(initial);
+    const output$ = input$.map(input => ({
         input: input,
         routerPath: router.buildPath(input, {})
     }));
@@ -95,21 +117,22 @@ function AppViewModel(inputs: AppViewModelInputs) {
 }
 
 const App = Recompose.componentFromStream(props$ => {
-    const { handler: submit, stream: submit$ } = createHandler<string>();
-    const output$ = AppViewModel({ submit$ });
+    const { handler: onInput, stream: onInput$ } = createHandler<string>();
+    const output$ = AppViewModel({ onInput$ });
 
+    // Example query forms. Consider making the input an object and the name derived from it? Reduces parameters needed.
     return output$.map(({ input, routerPath }) => (
         <div key="none" className="App">
             <div className="App-header">
                 <h2>Welcome to React</h2>
             </div>
             <DebugObservablesWidget />
-            <fieldset>
-                <legend>Router paths</legend>
-                <BasicInput onSubmit={val => submit(val ? val : "")} />
-                <div className="response">input: {input}</div>
-                <div className="response">routerPath: {routerPath}</div>
-            </fieldset>
+            <QueryForm
+                formName="Router path"
+                inputName="Route name"
+                onInput={onInput}
+                result={{ routerPath }}
+            />
         </div>
     ));
 });

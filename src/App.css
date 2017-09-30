@@ -60,7 +60,8 @@
     opacity: 0.6;
 }
 
-fieldset {
+.query-form.container {
+    margin: 20px;
     display: inline-block;
     width: 40%;
     text-align: left;
