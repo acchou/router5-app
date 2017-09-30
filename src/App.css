@@ -35,7 +35,7 @@
 }
 
 .response {
-    font-size: 24px;
+    font-size: 16px;
 }
 
 .observe-panel {
@@ -58,4 +58,10 @@
     width: 40px;
     height: 40px;
     opacity: 0.6;
+}
+
+fieldset {
+    display: inline-block;
+    width: 40%;
+    text-align: left;
 }

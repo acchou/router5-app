@@ -56,18 +56,15 @@ interface BasicInputProps {
 }
 
 function BasicInput(props: BasicInputProps) {
-    let value: string | null;
-
     return (
         <div className="basic-input">
             <input
                 type="text"
-                onChange={newValue => {
-                    value = newValue.target.textContent;
+                onInput={(event: React.FormEvent<HTMLInputElement>) => {
+                    const value = event.currentTarget.value;
                     props.onSubmit(value);
                 }}
             />
-            <input type="button" onClick={() => props.onSubmit(value)} value="submit" />
         </div>
     );
 }
@@ -89,7 +86,7 @@ function AppViewModel(inputs: AppViewModelInputs) {
     const { submit$ } = inputs;
     const initial = "home";
     const input$ = submit$.startWith(initial);
-    const output$ = input$.map(input => ({
+    const output$ = input$.do(input => console.log("input: " + input)).map(input => ({
         input: input,
         routerPath: router.buildPath(input, {})
     }));
@@ -107,11 +104,12 @@ const App = Recompose.componentFromStream(props$ => {
                 <h2>Welcome to React</h2>
             </div>
             <DebugObservablesWidget />
-            <div className="form">
+            <fieldset>
+                <legend>Router paths</legend>
                 <BasicInput onSubmit={val => submit(val ? val : "")} />
-                <span className="response">input: {input}</span>
-                <span className="response">routerPath: {routerPath}</span>
-            </div>
+                <div className="response">input: {input}</div>
+                <div className="response">routerPath: {routerPath}</div>
+            </fieldset>
         </div>
     ));
 });
