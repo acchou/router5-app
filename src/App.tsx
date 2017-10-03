@@ -72,7 +72,8 @@ interface QueryFormProps {
 function QueryForm(props: QueryFormProps) {
     const results = Object.keys(props.result).map(fieldName => (
         <div key={fieldName} className="query-form response">
-            {fieldName + ": " + props.result[fieldName]}
+            <span className="query-form field-name">{fieldName + ": "}</span>
+            <span className="query-form value">{props.result[fieldName]}</span>
         </div>
     ));
     return (
@@ -111,23 +112,23 @@ function AppViewModel(inputs: AppViewModelInputs) {
 
     const computedOutput$ = input$.map(input => ({
         input: input,
-        routerPath: router.buildPath(input, {})
+        buildPath: router.buildPath(input, {})
     }));
 
     const navigatePath$ = computedOutput$
-        .filter(({ routerPath }) => routerPath !== "")
+        .filter(({ buildPath }) => buildPath !== "")
         .do(({ input }) => router.navigate(input));
 
     const output$ = Rx.Observable
         .combineLatest(computedOutput$, navigatePath$, route$, transitionError$, transitionRoute$)
         .map(([computedOutput, _, route, transitionError, transitionRoute]) => ({
             ...computedOutput,
-            routeName: route.name,
-            routePath: route.path,
-            routeParams: route.params,
-            routeMeta: route.meta,
+            routeName: route && route.name,
+            routePath: route && route.path,
+            routeParams: route && route.params,
+            routeMeta: route && route.meta,
             transitionError,
-            transitionRouteName: transitionRoute.name
+            transitionRouteName: transitionRoute && transitionRoute.name
         }));
 
     return output$;

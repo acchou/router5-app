@@ -66,3 +66,7 @@
     width: 40%;
     text-align: left;
 }
+
+.query-form.response {
+    display: table;
+}
