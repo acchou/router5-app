@@ -79,7 +79,7 @@ function QueryForm(props: QueryFormProps) {
         <fieldset className="query-form container">
             <legend>{props.formName}</legend>
             <span>{props.inputName}: </span>
-            <BasicInput onInput={val => props.onInput(val ? val : "")} />
+            <BasicInput onInput={val => props.onInput(val || "")} />
             <p />
             {results}
         </fieldset>
@@ -100,16 +100,35 @@ interface AppViewModelOutputs {
 }
 
 function AppViewModel(inputs: AppViewModelInputs) {
-    const router = createRouter(routes);
+    const router = createRouter(routes)
+        .usePlugin(browserPlugin({}))
+        .start();
     const { route$, routeNode, transitionError$, transitionRoute$ } = createObservables(router);
 
     const { onInput$ } = inputs;
     const initial = "home";
     const input$ = onInput$.debounceTime(100).startWith(initial);
-    const output$ = input$.map(input => ({
+
+    const computedOutput$ = input$.map(input => ({
         input: input,
         routerPath: router.buildPath(input, {})
     }));
+
+    const navigatePath$ = computedOutput$
+        .filter(({ routerPath }) => routerPath !== "")
+        .do(({ input }) => router.navigate(input));
+
+    const output$ = Rx.Observable
+        .combineLatest(computedOutput$, navigatePath$, route$, transitionError$, transitionRoute$)
+        .map(([computedOutput, _, route, transitionError, transitionRoute]) => ({
+            ...computedOutput,
+            routeName: route.name,
+            routePath: route.path,
+            routeParams: route.params,
+            routeMeta: route.meta,
+            transitionError,
+            transitionRouteName: transitionRoute.name
+        }));
 
     return output$;
 }
@@ -119,7 +138,7 @@ const App = Recompose.componentFromStream(props$ => {
     const output$ = AppViewModel({ onInput$ });
 
     // Example query forms. Consider making the input an object and the name derived from it? Reduces parameters needed.
-    return output$.map(({ input, routerPath }) => (
+    return output$.map(output => (
         <div key="none" className="App">
             <div className="App-header">
                 <h2>Welcome to React</h2>
@@ -129,7 +148,7 @@ const App = Recompose.componentFromStream(props$ => {
                 formName="Router path"
                 inputName="Route name"
                 onInput={onInput}
-                result={{ routerPath }}
+                result={output}
             />
         </div>
     ));

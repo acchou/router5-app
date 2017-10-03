@@ -4,7 +4,7 @@ declare module "rxjs-router5" {
 
     interface RouterObservables {
         // an observable of your application route
-        route$: Rx.Observable<State>;
+        route$: Rx.Observable<State | null>;
 
         // a function returning an observable of route updates for the specified node.
         routeNode: (nodeName: string) => Rx.Observable<State>;

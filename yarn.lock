@@ -4672,8 +4672,8 @@ router5-transition-path@^5.0.0:
   resolved "https://registry.yarnpkg.com/router5-transition-path/-/router5-transition-path-5.0.0.tgz#8be2a6a0907e93083a4b7d705713f624cc60b861"
 
 router5@^5.2.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/router5/-/router5-5.2.1.tgz#3bc9579657f67948d65cc473e7e29376fad4dfe2"
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/router5/-/router5-5.2.2.tgz#01c8089f4e3092647b29d444ccec391b92a97170"
   dependencies:
     route-node "1.8.5"
     router5-transition-path "^5.0.0"
