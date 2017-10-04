@@ -81,41 +81,47 @@ function QueryForm(props: QueryFormProps) {
     );
 }
 
+interface QueryFormTextFieldProps {
+    // tslint:disable-next-line:no-any
+    value: any;
+}
+function QueryFormTextField(props: QueryFormTextFieldProps) {
+    return (
+        <input
+            type="text"
+            readOnly={true}
+            className="query-form value"
+            onClick={event => event.currentTarget.select()}
+            value={JSON.stringify(props.value, null, " ")}
+        />
+    );
+}
+
 interface QueryFormResultsProps {
     result: object;
 }
 
 function QueryFormResults(props: QueryFormResultsProps) {
-    function helper(prefix: string, fieldName: string, obj: object): JSX.Element[] {
-        const mainResult = (
-            <div key={fieldName} className="query-form row">
-                <span className="query-form field-name">{prefix || "" + fieldName + ": "}</span>
-                <input
-                    type="text"
-                    className="query-form value"
-                    readOnly={true}
-                    onClick={event => event.currentTarget.select()}
-                    value={JSON.stringify(obj[fieldName], null, " ")}
-                />
-            </div>
-        );
-
-        const value = obj[fieldName];
-        let subfieldRows: JSX.Element[] = [];
-        if (typeof value === "object") {
-            subfieldRows = Object.keys(value).reduce(
-                (previousFields, subfield) => [
-                    ...previousFields,
-                    ...helper(prefix + "." + fieldName, subfield, obj[subfield])
-                ],
-                []
+    function helper(obj: object, prefix: string[] = []): JSX.Element[] {
+        let result: JSX.Element[] = [];
+        Object.keys(obj).forEach(field => {
+            const value = obj[field];
+            const path = [...prefix, field];
+            const pathName = [...prefix, field].join(".");
+            result.push(
+                <div className="query-form row">
+                    <span className="query-form field-name">{pathName + ": "}</span>
+                    <QueryFormTextField value={value} />
+                </div>
             );
-        }
-        return [mainResult, ...subfieldRows];
+            if (value && typeof value === "object") {
+                result = [...result, ...helper(value, path)];
+            }
+        });
+
+        return result;
     }
-    // XXX 
-    const results = props.result.reduce((), helper("", );
-    return <div className="query-form responses">{results}</div>;
+    return <div className="query-form responses">{helper(props.result)}</div>;
 }
 
 export function createHandler<T>(): Recompose.EventHandlerOf<T, Rx.Observable<T>> {
