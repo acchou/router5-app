@@ -70,21 +70,52 @@ interface QueryFormProps {
 }
 
 function QueryForm(props: QueryFormProps) {
-    const results = Object.keys(props.result).map(fieldName => (
-        <div key={fieldName} className="query-form response">
-            <span className="query-form field-name">{fieldName + ": "}</span>
-            <span className="query-form value">{props.result[fieldName]}</span>
-        </div>
-    ));
     return (
         <fieldset className="query-form container">
             <legend>{props.formName}</legend>
             <span>{props.inputName}: </span>
             <BasicInput onInput={val => props.onInput(val || "")} />
             <p />
-            {results}
+            <QueryFormResults result={props.result} />
         </fieldset>
     );
+}
+
+interface QueryFormResultsProps {
+    result: object;
+}
+
+function QueryFormResults(props: QueryFormResultsProps) {
+    function helper(prefix: string, fieldName: string, obj: object): JSX.Element[] {
+        const mainResult = (
+            <div key={fieldName} className="query-form row">
+                <span className="query-form field-name">{prefix || "" + fieldName + ": "}</span>
+                <input
+                    type="text"
+                    className="query-form value"
+                    readOnly={true}
+                    onClick={event => event.currentTarget.select()}
+                    value={JSON.stringify(obj[fieldName], null, " ")}
+                />
+            </div>
+        );
+
+        const value = obj[fieldName];
+        let subfieldRows: JSX.Element[] = [];
+        if (typeof value === "object") {
+            subfieldRows = Object.keys(value).reduce(
+                (previousFields, subfield) => [
+                    ...previousFields,
+                    ...helper(prefix + "." + fieldName, subfield, obj[subfield])
+                ],
+                []
+            );
+        }
+        return [mainResult, ...subfieldRows];
+    }
+    // XXX 
+    const results = props.result.reduce((), helper("", );
+    return <div className="query-form responses">{results}</div>;
 }
 
 export function createHandler<T>(): Recompose.EventHandlerOf<T, Rx.Observable<T>> {
@@ -123,10 +154,7 @@ function AppViewModel(inputs: AppViewModelInputs) {
         .combineLatest(computedOutput$, navigatePath$, route$, transitionError$, transitionRoute$)
         .map(([computedOutput, _, route, transitionError, transitionRoute]) => ({
             ...computedOutput,
-            routeName: route && route.name,
-            routePath: route && route.path,
-            routeParams: route && route.params,
-            routeMeta: route && route.meta,
+            route,
             transitionError,
             transitionRouteName: transitionRoute && transitionRoute.name
         }));

@@ -63,10 +63,35 @@
 .query-form.container {
     margin: 20px;
     display: inline-block;
-    width: 40%;
+    width: 90%;
     text-align: left;
 }
 
-.query-form.response {
+.query-form.responses {
     display: table;
+    table-layout: auto;
+    border-spacing: 4px 8px;
+    font-family: "Source Code Pro", monospace;
+    font-size: 13px;
+    width: 100%;
+}
+
+.query-form.row {
+    display: table-row;
+    width: 100%;
+}
+
+.query-form.field-name {
+    display: table-cell;
+    text-align: right;
+    width: 20%;
+}
+
+.query-form.value {
+    display: table-cell;
+    width: 90%;
+    background-color: #eee;
+    border: none;
+    padding: 8px;
+    font-size: 12px;
 }
