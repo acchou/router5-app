@@ -109,7 +109,7 @@ function QueryFormResults(props: QueryFormResultsProps) {
             const path = [...prefix, field];
             const pathName = [...prefix, field].join(".");
             result.push(
-                <div className="query-form row">
+                <div key={pathName} className="query-form row">
                     <span className="query-form field-name">{pathName + ": "}</span>
                     <QueryFormTextField value={value} />
                 </div>
