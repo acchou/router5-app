@@ -170,10 +170,10 @@ function AppViewModel(inputs: AppViewModelInputs) {
 
 const App = Recompose.componentFromStream(props$ => {
     const { handler: onInput, stream: onInput$ } = createHandler<string>();
-    const output$ = AppViewModel({ onInput$ });
+    const state$ = AppViewModel({ onInput$ });
 
     // Example query forms. Consider making the input an object and the name derived from it? Reduces parameters needed.
-    return output$.map(output => (
+    return state$.map(state => (
         <div key="none" className="App">
             <div className="App-header">
                 <h2>Welcome to React</h2>
@@ -183,7 +183,7 @@ const App = Recompose.componentFromStream(props$ => {
                 formName="Router path"
                 inputName="Route name"
                 onInput={onInput}
-                result={output}
+                result={state}
             />
         </div>
     ));
